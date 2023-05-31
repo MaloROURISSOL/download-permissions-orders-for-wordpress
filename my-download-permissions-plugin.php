@@ -2,7 +2,7 @@
 /*
 Plugin Name: Download Permissions for Woocommerce Orders Plugin
 Description: A plugin to regenerate download permissions for completed orders with downloadable items.
-Version: 1.0
+Version: 1.1
 Author: Malo Rourissol
 */
 
@@ -17,12 +17,19 @@ add_action( 'wp_ajax_ccom_regenerate', function() {
     ];
     $orders = wc_get_orders( $args );
 
+    $count = 0;  // Initialize counter
+
     if( ! $orders ) {
-        echo 'Total des autorisations régénérées : ' . $offset;  // Display total number of regenerated permissions
+        echo 'end';
+        echo '
+        <div class="wrap">
+            <br><br>
+            <p>Régénération des permissions de téléchargements terminée.</p>
+        </div>
         wp_die();
+    ';
     }
 
-    $count = 0;  // Initialize counter
     foreach( $orders as $order ) {
         echo '.';
         if( ! $order->has_downloadable_item() ) {
@@ -41,7 +48,6 @@ add_action( 'wp_ajax_ccom_regenerate', function() {
 
 // Add a submenu page under the Tools menu
 add_action('admin_menu', 'ccom_add_submenu_page');
-
 function ccom_add_submenu_page() {
     add_submenu_page(
         'tools.php',
@@ -52,13 +58,13 @@ function ccom_add_submenu_page() {
         'ccom_render_submenu_page'
     );
 }
-add_action('admin_menu', 'ccom_add_submenu_page');
 
+add_action('admin_menu', 'ccom_add_submenu_page');
 function ccom_render_submenu_page() {
     echo '
         <div class="wrap">
-            <h1>Régénérer les permissions de commandes Woocommerce terminées</h1>
-            <p>Cette fonctionnalité peut prendre plusieurs heures suivant votre nombre de commandes.</p>
+            <h1>Régénération des permissions de commandes Woocommerce terminées</h1>
+            <p>Cette fonctionnalité peut prendre un certain temps suivant votre nombre de commandes.</p>
             <a href="#" id="ccom_regenerate_button" class="button button-primary button-large">
                 Régénérer les permissions de commandes
             </a>
@@ -71,14 +77,15 @@ function ccom_render_submenu_page() {
 add_action( 'admin_enqueue_scripts', function() {
     wp_enqueue_script( 'jquery' );
     wp_add_inline_script( 'jquery', '
-        var ccom_regenerate_offset = 0;
+        var ccom_regenerate_offset = 0;     // Define the offset variable for tracking progress
         jQuery( document ).ready( function( $ ) {
             $( "#ccom_regenerate_button" ).click( function() {
-                ccom_regenerate( $ );
+                ccom_regenerate( $ );       // Call the ccom_regenerate function when the button is clicked
             } );
         } );
 
         function ccom_regenerate( $ ) {
+            // Define the data to be sent in the AJAX request
             var data = {
                 "action": "ccom_regenerate",
                 "offset": ccom_regenerate_offset
@@ -86,14 +93,15 @@ add_action( 'admin_enqueue_scripts', function() {
             $.post( ajaxurl, data, function( response ) {
  
                 // Handle EOF Or Error
-                if( response == "" ) { return; }
+                console.log(response);
+                if( response == "end" ) { return; }
  
-                // Update progress text
-                $( "#progress" ).html( "Offset: " + ccom_regenerate_offset + " " + response );
+                // Update progress text on the page
+                $( "#progress" ).html( "Offset: " + ccom_regenerate_offset + " - " + (ccom_regenerate_offset + 100) + " " + response );
  
-                // Advance
-                ccom_regenerate_offset += 100;
-                ccom_regenerate( $ );
+                
+                ccom_regenerate_offset += 100;  // Increase the offset by 100 for the next batch of orders
+                ccom_regenerate( $ );           // Recursively call the ccom_regenerate function to continue processing the next batch of orders
             } );
         }
     ', 'after' );

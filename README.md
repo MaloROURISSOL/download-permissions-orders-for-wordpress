@@ -5,7 +5,7 @@
 * Requires at least: 5.0
 * Tested up to: 5.8
 * Requires PHP: 7.0
-* Stable tag: 1.0
+* Stable tag: 1.1
 * License: GPLv2 or later
 * License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,5 +34,4 @@ This plugin has been tested with WooCommerce up to version 7.6.0. It may work wi
 
 **Changelog**
 
-**v1.0**
-* Initial release.
+**v1.1**
