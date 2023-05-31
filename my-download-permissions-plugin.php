@@ -21,13 +21,7 @@ add_action( 'wp_ajax_ccom_regenerate', function() {
 
     if( ! $orders ) {
         echo 'end';
-        echo '
-        <div class="wrap">
-            <br><br>
-            <p>Régénération des permissions de téléchargements terminée.</p>
-        </div>
         wp_die();
-    ';
     }
 
     foreach( $orders as $order ) {
